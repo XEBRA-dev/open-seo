@@ -1,0 +1,91 @@
+# XEBRA fork only — deploys the `selfhost` stage to seo.xebra.dev.
+#
+# Secrets live here rather than on anyone's laptop. alchemy.run.ts reconciles
+# worker vars on every deploy, so values set by hand in the Cloudflare dashboard
+# are wiped; this workflow's env file is the source of truth.
+#
+# CLOUDFLARE_API_TOKEN replaces `alchemy login`: selfhost-deploy-preflight.mjs
+# skips its whole login-profile check when that variable is present.
+name: Deploy selfhost
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - xebra-deploy
+
+concurrency:
+  group: deploy-selfhost
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Written at run time so no secret is ever committed. umask keeps it
+      # unreadable to other users on the runner.
+      - name: Write .env.selfhost
+        env:
+          DATAFORSEO_API_KEY: ${{ secrets.DATAFORSEO_API_KEY }}
+          TEAM_DOMAIN: ${{ secrets.TEAM_DOMAIN }}
+          POLICY_AUD: ${{ secrets.POLICY_AUD }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+        run: |
+          set -euo pipefail
+          umask 077
+          {
+            printf 'DATAFORSEO_API_KEY=%s\n' "$DATAFORSEO_API_KEY"
+            printf 'SELFHOST_DOMAIN=%s\n'    'seo.xebra.dev'
+            printf 'TEAM_DOMAIN=%s\n'        "$TEAM_DOMAIN"
+            printf 'POLICY_AUD=%s\n'         "$POLICY_AUD"
+            printf 'GOOGLE_CLIENT_ID=%s\n'   "$GOOGLE_CLIENT_ID"
+            printf 'GOOGLE_CLIENT_SECRET=%s\n' "$GOOGLE_CLIENT_SECRET"
+            printf 'BETTER_AUTH_SECRET=%s\n' "$BETTER_AUTH_SECRET"
+            printf 'OPENSEO_TELEMETRY_DISABLED=%s\n' '1'
+          } > .env.selfhost
+
+      # Fail in seconds on a missing value rather than minutes into the build.
+      - name: Preflight
+        run: node scripts/selfhost-deploy-preflight.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm deploy:selfhost --yes
+
+      # Proves the deploy still serves the Access gate rather than a 404.
+      - name: Verify Access gate
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://seo.xebra.dev || true)
+            echo "attempt $i: HTTP $code"
+            case "$code" in
+              301|302|303) echo "Access gate responding."; exit 0 ;;
+            esac
+            sleep 15
+          done
+          echo "seo.xebra.dev did not return an Access redirect." >&2
+          exit 1
