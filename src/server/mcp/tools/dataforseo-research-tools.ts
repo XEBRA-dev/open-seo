@@ -505,6 +505,8 @@ function toMcpKeywordMetricRow(row: KeywordMetricRow) {
     cpc: row.cpc,
     competition: row.competition,
     competition_level: row.competitionLevel,
+    low_top_of_page_bid: row.lowTopOfPageBid,
+    high_top_of_page_bid: row.highTopOfPageBid,
     monthly_searches: row.monthlySearches.length
       ? row.monthlySearches.map((entry) => ({
           year: entry.year,
@@ -909,7 +911,7 @@ export const getKeywordMetricsTool = {
         : row,
     );
 
-    const header = `Fetched metrics for ${rows.length} keywords. Columns: volume = monthly searches, KD = keyword difficulty (0-100), CPC in USD, competition = paid competition (0-1); "—" = unavailable.`;
+    const header = `Fetched metrics for ${rows.length} keywords. Columns: volume = monthly searches, KD = keyword difficulty (0-100), CPC and bid range in USD, bid range = low/high top-of-page bid, competition = paid competition (0-1); "—" = unavailable.`;
     return mcpResponse({
       text:
         rows.length === 0
