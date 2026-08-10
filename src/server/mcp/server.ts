@@ -29,6 +29,7 @@ import {
   getAuditStatusTool,
   runSiteAuditTool,
 } from "@/server/mcp/tools/site-audit-tools";
+import { getPaidKeywordGapTool } from "@/server/mcp/tools/get-paid-keyword-gap";
 import { whoamiTool } from "@/server/mcp/tools/whoami";
 
 // Each handler is wrapped with instrumentMcpToolHandler so failures reach
@@ -71,6 +72,15 @@ export function registerOpenSeoMcpTools(server: McpServer) {
       listSavedKeywordsTool.name,
       listSavedKeywordsTool.config.outputSchema,
       listSavedKeywordsTool.handler,
+    ),
+  );
+  server.registerTool(
+    getPaidKeywordGapTool.name,
+    getPaidKeywordGapTool.config,
+    instrumentMcpToolHandler(
+      getPaidKeywordGapTool.name,
+      getPaidKeywordGapTool.config.outputSchema,
+      getPaidKeywordGapTool.handler,
     ),
   );
   server.registerTool(
