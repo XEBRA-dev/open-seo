@@ -13,7 +13,7 @@ const MAX_UNION_KEYWORDS = 700;
 // competitors at this depth still fits the union cap.
 const PAID_KEYWORDS_PER_DOMAIN = 200;
 
-export type PaidGapResult = {
+type PaidGapResult = {
   rows: PaidGapRow[];
   /** True when more keywords were found than could be priced in one pass. */
   truncated: boolean;
