@@ -24,6 +24,9 @@ export type KeywordMetricRow = {
   cpc: number | null;
   competition: number | null;
   competitionLevel: string | null;
+  // Google Ads top-of-page bid range, in USD (same unit as `cpc`).
+  lowTopOfPageBid: number | null;
+  highTopOfPageBid: number | null;
   keywordDifficulty: number | null;
   intent: string | null;
   monthlySearches: MonthlySearch[];
@@ -61,6 +64,8 @@ function normalizeKeywordOverview(
     cpc: info?.cpc ?? null,
     competition: info?.competition ?? null,
     competitionLevel: info?.competition_level ?? null,
+    lowTopOfPageBid: info?.low_top_of_page_bid ?? null,
+    highTopOfPageBid: info?.high_top_of_page_bid ?? null,
     keywordDifficulty: item.keyword_properties?.keyword_difficulty ?? null,
     intent: item.search_intent_info?.main_intent ?? null,
     monthlySearches: toMonthlySearches(
@@ -85,6 +90,8 @@ function normalizeAdsKeyword(
     competition:
       item.competition_index != null ? item.competition_index / 100 : null,
     competitionLevel: item.competition ?? null,
+    lowTopOfPageBid: item.low_top_of_page_bid ?? null,
+    highTopOfPageBid: item.high_top_of_page_bid ?? null,
     keywordDifficulty: null,
     intent: null,
     monthlySearches: toMonthlySearches(item.monthly_searches),
@@ -187,6 +194,8 @@ function nullMetricRow(keyword: string): KeywordMetricRow {
     cpc: null,
     competition: null,
     competitionLevel: null,
+    lowTopOfPageBid: null,
+    highTopOfPageBid: null,
     keywordDifficulty: null,
     intent: null,
     monthlySearches: [],

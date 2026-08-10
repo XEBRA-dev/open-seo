@@ -59,6 +59,8 @@ describe("fetchKeywordMetricsForList", () => {
         cpc: 3.2,
         competition: 0.5,
         competitionLevel: "MEDIUM",
+        lowTopOfPageBid: null,
+        highTopOfPageBid: null,
         keywordDifficulty: 42,
         intent: "commercial",
         monthlySearches: [{ year: 2026, month: 1, searchVolume: 880 }],
@@ -101,6 +103,8 @@ describe("fetchKeywordMetricsForList", () => {
         cpc: 2.54,
         competition: 0.42,
         competitionLevel: "HIGH",
+        lowTopOfPageBid: null,
+        highTopOfPageBid: null,
         keywordDifficulty: null,
         intent: null,
         monthlySearches: [{ year: 2026, month: 5, searchVolume: 1300 }],
@@ -188,5 +192,75 @@ describe("fetchKeywordMetricsForList", () => {
       keywordDifficulty: 17,
       intent: "transactional",
     });
+  });
+  it("maps top-of-page bid ranges from Labs keyword_info", async () => {
+    const keywordOverview = vi.fn().mockResolvedValue([
+      {
+        keyword: "solceller pris",
+        keyword_info: {
+          search_volume: 2400,
+          cpc: 18.2,
+          competition: 0.87,
+          competition_level: "HIGH",
+          low_top_of_page_bid: 12.4,
+          high_top_of_page_bid: 31.8,
+        },
+      },
+    ]);
+    const client = fakeClient({ keywordOverview });
+
+    const rows = await fetchKeywordMetricsForList(client, {
+      keywords: ["solceller pris"],
+      locationCode: 2840,
+      languageCode: "en",
+      creditFeature: "keyword_research",
+    });
+
+    expect(rows[0].lowTopOfPageBid).toBe(12.4);
+    expect(rows[0].highTopOfPageBid).toBe(31.8);
+  });
+
+  it("maps top-of-page bid ranges from Google Ads items", async () => {
+    const adsSearchVolume = vi.fn().mockResolvedValue([
+      {
+        keyword: "solar panels",
+        search_volume: 1000,
+        cpc: 9.5,
+        competition: "HIGH",
+        competition_index: 80,
+        low_top_of_page_bid: 4.25,
+        high_top_of_page_bid: 11.75,
+      },
+    ]);
+    const client = fakeClient({ adsSearchVolume });
+
+    const rows = await fetchKeywordMetricsForList(client, {
+      keywords: ["solar panels"],
+      locationCode: 2352,
+      languageCode: "is",
+      creditFeature: "keyword_research",
+    });
+
+    expect(rows[0].lowTopOfPageBid).toBe(4.25);
+    expect(rows[0].highTopOfPageBid).toBe(11.75);
+  });
+
+  it("returns null bid ranges when DataForSEO omits them", async () => {
+    const keywordOverview = vi
+      .fn()
+      .mockResolvedValue([
+        { keyword: "obscure term", keyword_info: { search_volume: 0 } },
+      ]);
+    const client = fakeClient({ keywordOverview });
+
+    const rows = await fetchKeywordMetricsForList(client, {
+      keywords: ["obscure term"],
+      locationCode: 2840,
+      languageCode: "en",
+      creditFeature: "keyword_research",
+    });
+
+    expect(rows[0].lowTopOfPageBid).toBeNull();
+    expect(rows[0].highTopOfPageBid).toBeNull();
   });
 });
