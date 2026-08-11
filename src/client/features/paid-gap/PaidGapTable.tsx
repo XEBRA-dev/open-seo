@@ -29,7 +29,7 @@ function bidRange(row: PaidGapTableRow): string {
   return `${money(row.lowTopOfPageBid)} – ${money(row.highTopOfPageBid)}`;
 }
 
-/** competition is a 0-1 ratio; show the 0-100 index alongside the level. */
+/** `competition` is a 0-1 ratio; show it as the familiar 0-100 index. */
 function competitionCell(row: PaidGapTableRow): string {
   const index =
     row.competition == null ? null : Math.round(row.competition * 100);
@@ -42,57 +42,56 @@ function competitionCell(row: PaidGapTableRow): string {
 export function PaidGapTable({ rows, clientDomain, competitors }: Props) {
   if (rows.length === 0) {
     return (
-      <p className="text-muted-foreground rounded-lg border border-dashed p-10 text-center text-sm">
+      <div className="border-base-300 text-base-content/55 rounded-xl border border-dashed p-10 text-center text-sm">
         No paid keywords found for these domains in this market.
-      </p>
+      </div>
     );
   }
 
   const domains = [clientDomain, ...competitors];
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 text-left">
-          <tr>
-            <th className="px-3 py-2 font-medium">Keyword</th>
-            {domains.map((domain) => (
-              <th
-                key={domain}
-                className="px-3 py-2 text-center font-medium whitespace-nowrap"
-              >
-                {domain === clientDomain ? `${domain} (client)` : domain}
-              </th>
-            ))}
-            <th className="px-3 py-2 text-right font-medium whitespace-nowrap">
-              Bid range (USD)
-            </th>
-            <th className="px-3 py-2 text-right font-medium">CPC</th>
-            <th className="px-3 py-2 font-medium">Competition</th>
-            <th className="px-3 py-2 text-right font-medium">Volume</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.keyword} className="border-t">
-              <td className="px-3 py-2">{row.keyword}</td>
+    <div className="card bg-base-100 border-base-300 border">
+      <div className="overflow-x-auto">
+        <table className="table table-zebra table-sm">
+          <thead>
+            <tr>
+              <th>Keyword</th>
               {domains.map((domain) => (
-                <td key={domain} className="px-3 py-2 text-center">
-                  {row.bidders.includes(domain) ? "●" : EM_DASH}
-                </td>
+                <th key={domain} className="text-center whitespace-nowrap">
+                  {domain === clientDomain ? `${domain} (client)` : domain}
+                </th>
               ))}
-              <td className="px-3 py-2 text-right whitespace-nowrap">
-                {bidRange(row)}
-              </td>
-              <td className="px-3 py-2 text-right">{money(row.cpc)}</td>
-              <td className="px-3 py-2">{competitionCell(row)}</td>
-              <td className="px-3 py-2 text-right">
-                {row.searchVolume ?? EM_DASH}
-              </td>
+              <th className="text-right whitespace-nowrap">Bid range</th>
+              <th className="text-right">CPC</th>
+              <th>Competition</th>
+              <th className="text-right">Volume</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.keyword}>
+                <td>{row.keyword}</td>
+                {domains.map((domain) => (
+                  <td key={domain} className="text-center">
+                    {row.bidders.includes(domain) ? (
+                      <span className="text-success">●</span>
+                    ) : (
+                      <span className="text-base-content/30">{EM_DASH}</span>
+                    )}
+                  </td>
+                ))}
+                <td className="text-right whitespace-nowrap">
+                  {bidRange(row)}
+                </td>
+                <td className="text-right">{money(row.cpc)}</td>
+                <td>{competitionCell(row)}</td>
+                <td className="text-right">{row.searchVolume ?? EM_DASH}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
