@@ -76,16 +76,24 @@ jobs:
         run: pnpm deploy:selfhost --yes
 
       # Proves the deploy still serves the Access gate rather than a 404.
+      #
+      # Sends browser-style headers on purpose: with Managed OAuth enabled (for
+      # MCP), Cloudflare Access answers non-browser requests with a 401 bearer
+      # challenge instead of a login redirect. Both mean the gate is up, so
+      # either is accepted; a 404 or 5xx is the actual failure.
       - name: Verify Access gate
         run: |
           set -euo pipefail
           for i in $(seq 1 10); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://seo.xebra.dev || true)
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
+              -H 'Accept: text/html,application/xhtml+xml' \
+              -H 'User-Agent: Mozilla/5.0 (deploy-check)' \
+              https://seo.xebra.dev || true)
             echo "attempt $i: HTTP $code"
             case "$code" in
-              301|302|303) echo "Access gate responding."; exit 0 ;;
+              301|302|303|401) echo "Access gate responding."; exit 0 ;;
             esac
             sleep 15
           done
-          echo "seo.xebra.dev did not return an Access redirect." >&2
+          echo "seo.xebra.dev did not return an Access redirect or bearer challenge." >&2
           exit 1
