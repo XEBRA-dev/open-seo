@@ -1,0 +1,166 @@
+# Watches every-app/open-seo and turns new upstream work into a pull request,
+# so syncing follows the same reviewed, CI-gated path as any other change.
+#
+# Clean merges open a PR. Conflicts open an issue instead — those need a human
+# resolving them locally, and a half-merged branch would just be misleading.
+name: Sync upstream
+
+on:
+  schedule:
+    # Mondays 06:00 UTC. Upstream lands ~30 commits a fortnight, so daily
+    # would be noise.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  UPSTREAM: https://github.com/every-app/open-seo.git
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "$UPSTREAM" 2>/dev/null || git remote set-url upstream "$UPSTREAM"
+          git fetch upstream --quiet
+
+      - name: Is there anything to sync?
+        id: check
+        run: |
+          set -euo pipefail
+          behind=$(git rev-list --count main..upstream/main)
+          echo "behind=$behind" >> "$GITHUB_OUTPUT"
+          if [ "$behind" -eq 0 ]; then
+            echo "Already up to date with upstream."
+          else
+            echo "$behind upstream commit(s) to sync."
+          fi
+
+      - name: Skip if an open sync PR already exists
+        id: existing
+        if: steps.check.outputs.behind != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          open=$(gh pr list --state open --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("sync/upstream-"))] | length')
+          echo "open=$open" >> "$GITHUB_OUTPUT"
+          if [ "$open" != "0" ]; then
+            echo "An upstream sync PR is already open; leaving it alone."
+          fi
+
+      - name: Attempt the merge
+        id: merge
+        if: steps.check.outputs.behind != '0' && steps.existing.outputs.open == '0'
+        run: |
+          set -uo pipefail
+          branch="sync/upstream-$(date -u +%Y-%m-%d)"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          git checkout -b "$branch"
+          if git merge upstream/main --no-edit; then
+            echo "clean=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "clean=false" >> "$GITHUB_OUTPUT"
+            # Record the conflicts before throwing the merge away.
+            git diff --name-only --diff-filter=U > /tmp/conflicts.txt
+            git merge --abort
+          fi
+
+      - name: Summarise what is coming
+        id: summary
+        if: steps.merge.outcome == 'success'
+        run: |
+          set -euo pipefail
+          git log --oneline --no-merges main..upstream/main | head -40 > /tmp/commits.txt
+          # These two are where this fork historically gets hurt: the
+          # SELFHOST_DOMAIN patch lives in alchemy.run.ts and fails silently if
+          # dropped, and migrations collide on the shared journal.
+          risky=""
+          if git diff --name-only main..upstream/main | grep -q '^alchemy.run.ts$'; then
+            risky="${risky}- \`alchemy.run.ts\` changed upstream. Verify the \`SELFHOST_DOMAIN\` patch survives; if it is dropped the custom domain silently stops resolving on the next deploy.\n"
+          fi
+          if git diff --name-only main..upstream/main | grep -qE '^drizzle(-pg)?/'; then
+            risky="${risky}- New database migrations. Check the journal merged cleanly and numbering does not collide.\n"
+          fi
+          if [ -z "$risky" ]; then
+            risky="- Nothing touching this fork's known-risky files.\n"
+          fi
+          printf '%b' "$risky" > /tmp/risky.txt
+
+      - name: Open the sync PR
+        if: steps.merge.outputs.clean == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          branch="${{ steps.merge.outputs.branch }}"
+          git push -u origin "$branch"
+          {
+            echo "Automated sync of ${{ steps.check.outputs.behind }} commit(s) from \`every-app/open-seo\`."
+            echo
+            echo "### Watch out for"
+            cat /tmp/risky.txt
+            echo
+            echo "### Upstream commits"
+            echo '```'
+            cat /tmp/commits.txt
+            echo '```'
+            echo
+            echo "---"
+            echo "**CI will not have run on this PR.** GitHub does not trigger workflows for pull requests opened by \`GITHUB_TOKEN\`, and \`main\` requires the \`ci\` check. Close and reopen this PR to start it."
+          } > /tmp/body.md
+          gh pr create --base main --head "$branch" \
+            --title "Sync upstream (${{ steps.check.outputs.behind }} commits)" \
+            --body-file /tmp/body.md
+
+      - name: Open an issue when the merge conflicts
+        if: steps.merge.outputs.clean == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          {
+            echo "\`upstream/main\` has ${{ steps.check.outputs.behind }} new commit(s) that do not merge cleanly, so no PR was opened."
+            echo
+            echo "### Conflicted files"
+            echo '```'
+            cat /tmp/conflicts.txt
+            echo '```'
+            echo
+            echo "### Resolve locally"
+            echo '```bash'
+            echo "git fetch upstream"
+            echo "git checkout -b sync/upstream-manual main"
+            echo "git merge upstream/main"
+            echo "# resolve, then:"
+            echo "pnpm ci:check && pnpm test:ci"
+            echo "git push -u origin sync/upstream-manual"
+            echo '```'
+            echo
+            echo "Then open a PR into \`main\`."
+          } > /tmp/issue.md
+          gh issue create \
+            --title "Upstream sync needs manual conflict resolution" \
+            --body-file /tmp/issue.md
