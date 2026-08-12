@@ -74,17 +74,37 @@ export const Route = createRootRoute({
         sizes: "180x180",
         href: "/apple-touch-icon.png",
       },
+      // The XEBRA mark is solid ink on transparency, so a single colour
+      // disappears against one of the two browser chromes. Serve a dark-ink
+      // icon to light UI and a light-ink icon to dark UI; the .ico below is
+      // the fallback for browsers that ignore `media` on icon links.
       {
         rel: "icon",
         type: "image/png",
         sizes: "32x32",
         href: "/favicon-32x32.png",
+        media: "(prefers-color-scheme: light)",
       },
       {
         rel: "icon",
         type: "image/png",
         sizes: "16x16",
         href: "/favicon-16x16.png",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/favicon-32x32-dark.png",
+        media: "(prefers-color-scheme: dark)",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        href: "/favicon-16x16-dark.png",
+        media: "(prefers-color-scheme: dark)",
       },
       { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
       { rel: "manifest", href: "/site.webmanifest" },
