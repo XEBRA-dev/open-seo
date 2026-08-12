@@ -51,6 +51,7 @@ export function PaidGapPage({
     queryFn: () =>
       analysePaidGap({
         data: {
+          projectId,
           clientDomain: client,
           competitorDomains: competitors,
           locationCode: market!.locationCode,
