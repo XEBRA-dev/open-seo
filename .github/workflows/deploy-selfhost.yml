@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - xebra-deploy
+      - main
 
 concurrency:
   group: deploy-selfhost
