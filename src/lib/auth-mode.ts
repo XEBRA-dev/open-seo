@@ -42,6 +42,22 @@ export function isHostedClientAuthMode() {
   return isHostedAuthMode(import.meta.env.AUTH_MODE);
 }
 
+export function isCloudflareAccessClientAuthMode() {
+  // Same deploy-time contract as isHostedClientAuthMode. Unset fails closed to
+  // cloudflare_access, which is what a self-host deploy leaves it as.
+  return getAuthMode(import.meta.env.AUTH_MODE) === "cloudflare_access";
+}
+
+/**
+ * Cloudflare Access owns the session in this mode, so signing out means
+ * clearing its cookie, not Better Auth's. `returnTo` sends the browser back to
+ * the app afterwards, which re-triggers the Access login; without it Access
+ * renders its own bare "logged out" error page.
+ */
+export function getAccessLogoutHref(origin: string) {
+  return `/cdn-cgi/access/logout?returnTo=${encodeURIComponent(`${origin}/`)}`;
+}
+
 export function isEmailVerificationBypassed() {
   // Local-dev escape hatch (BYPASS_EMAIL_VERIFICATION=true). The server skips
   // verification and never marks users emailVerified, so the client must treat
