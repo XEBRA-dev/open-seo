@@ -42,8 +42,12 @@ function competitionCell(row: PaidGapTableRow): string {
 export function PaidGapTable({ rows, clientDomain, competitors }: Props) {
   if (rows.length === 0) {
     return (
-      <div className="border-base-300 text-base-content/55 rounded-xl border border-dashed p-10 text-center text-sm">
-        No paid keywords found for these domains in this market.
+      <div className="border-base-300 text-base-content/55 space-y-1 rounded-xl border border-dashed p-10 text-center text-sm">
+        <p>No Google Ads keywords found for these domains in this market.</p>
+        <p>
+          That usually means none of them are currently running paid search here
+          — not that the lookup failed.
+        </p>
       </div>
     );
   }
@@ -91,6 +95,22 @@ export function PaidGapTable({ rows, clientDomain, competitors }: Props) {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="border-base-300 text-base-content/55 space-y-1 border-t px-4 py-3 text-xs">
+        <p>
+          One row per keyword that at least one of these domains runs Google Ads
+          on. <span className="text-success">&#9679;</span> marks a domain
+          bidding on that keyword.
+        </p>
+        <p>
+          <strong>Bid range</strong> is what Google reports it costs to place an
+          ad at the top of page one — the low and high end, in USD. It is a
+          market rate, not any single advertiser&rsquo;s actual bid, which no
+          data provider can see. <strong>CPC</strong> is the average cost per
+          click. <strong>Competition</strong> is paid-search competition, as a
+          level and a 0&ndash;100 index. <strong>Volume</strong> is estimated
+          monthly searches. Source: DataForSEO, derived from Google Ads.
+        </p>
       </div>
     </div>
   );

@@ -24,6 +24,11 @@ describe("paidGapInputSchema", () => {
     expect(paidGapInputSchema.safeParse(withoutProjectId).success).toBe(false);
   });
 
+  it("requires at least one competitor", () => {
+    const noCompetitors = { ...valid, competitorDomains: [] };
+    expect(paidGapInputSchema.safeParse(noCompetitors).success).toBe(false);
+  });
+
   it("rejects more than four competitors", () => {
     const tooMany = {
       ...valid,

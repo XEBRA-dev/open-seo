@@ -60,7 +60,7 @@ export function PaidGapPage({
       }),
     // The market comes from the projects query; without it we would silently
     // analyse the wrong country.
-    enabled: hasSearch && market !== undefined,
+    enabled: hasSearch && competitors.length > 0 && market !== undefined,
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
@@ -74,6 +74,10 @@ export function PaidGapPage({
     });
   }
 
+  const draftCompetitors = parseCompetitorDomains(competitorsInput);
+  const canAnalyse =
+    normalizeDomain(clientInput).length > 0 && draftCompetitors.length > 0;
+
   const rows = gapQuery.data?.rows ?? [];
   const visibleRows = gapOnly
     ? rows.filter((row) => !row.clientBids && row.bidders.length > 0)
@@ -85,8 +89,9 @@ export function PaidGapPage({
         <div>
           <h1 className="text-2xl font-semibold">Paid gap</h1>
           <p className="text-base-content/60 text-sm">
-            Compare which keywords a client and its competitors buy Google Ads
-            on, and what each one costs. All amounts in USD.
+            Every keyword that any of these domains runs Google Ads on, showing
+            who bids and what the placement costs. Use it to find terms a
+            competitor buys that your client does not.
           </p>
         </div>
 
@@ -138,7 +143,12 @@ export function PaidGapPage({
                 <button
                   type="submit"
                   className="btn btn-primary shrink-0 px-6"
-                  disabled={!normalizeDomain(clientInput)}
+                  title={
+                    canAnalyse
+                      ? undefined
+                      : "Enter a client domain and at least one competitor"
+                  }
+                  disabled={!canAnalyse}
                 >
                   {gapQuery.isFetching ? "Analysing..." : "Analyse"}
                 </button>
@@ -175,8 +185,8 @@ export function PaidGapPage({
           <div className="border-base-300 text-base-content/55 flex flex-col items-center gap-2 rounded-xl border border-dashed p-10 text-center text-sm">
             <Coins className="size-6" />
             <p>
-              Enter a client domain and up to {PAID_GAP_MAX_COMPETITORS}{" "}
-              competitors to see who bids on what.
+              Enter a client domain and at least one competitor (up to{" "}
+              {PAID_GAP_MAX_COMPETITORS}) to see who bids on what.
             </p>
           </div>
         )}

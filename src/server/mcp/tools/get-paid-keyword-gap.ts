@@ -46,10 +46,10 @@ const inputSchema = {
     ),
   competitorDomains: z
     .array(z.string().min(1))
+    .min(1)
     .max(4)
-    .optional()
     .describe(
-      "Up to four competitor domains to compare against. Omit to price only the client's own paid keywords.",
+      "One to four competitor domains to compare against. Required: this is a gap analysis, so a single domain has nothing to compare.",
     ),
   locationCode: z
     .number()
@@ -74,7 +74,7 @@ export const getPaidKeywordGapTool = {
   config: {
     title: "Get paid keyword gap",
     description:
-      "Compares which keywords a client and its competitors buy Google Ads on, with each keyword's top-of-page bid range, CPC, competition and search volume. All money is in USD. Use it to find terms competitors bid on that the client does not. Charges credits: one ranked-keywords call per domain plus one keyword-metrics call for the union.",
+      "Every keyword that a client or its named competitors runs Google Ads on, showing which domains bid on each and what the placement costs. `bidders` lists the domains advertising on that keyword. `lowTopOfPageBid`/`highTopOfPageBid` are what Google reports it costs to place an ad at the top of page one (USD) — a market rate, not any single advertiser's actual bid, which no provider can see. Empty rows usually mean none of these domains run paid search in this market. Charges credits: one ranked-keywords call per domain plus one keyword-metrics call for the union.",
     inputSchema,
     outputSchema: {
       rows: z.array(looseObjectOutputSchema),
@@ -91,7 +91,7 @@ export const getPaidKeywordGapTool = {
   },
   handler: withMcpProjectAuth(async (args: Args, context) => {
     const { locationCode, languageCode } = resolveMarket(args, context.project);
-    const competitorDomains = args.competitorDomains ?? [];
+    const competitorDomains = args.competitorDomains;
 
     const result = await runPaidGapAnalysis({
       billingCustomer: context.billing,
@@ -102,11 +102,7 @@ export const getPaidKeywordGapTool = {
     });
 
     const notes = [
-      `Paid keyword gap for ${args.clientDomain} vs ${
-        competitorDomains.length
-          ? competitorDomains.join(", ")
-          : "no competitors"
-      }.`,
+      `Paid keyword gap for ${args.clientDomain} vs ${competitorDomains.join(", ")}.`,
       `${result.rows.length} keywords. Bid range and CPC in USD.`,
       result.truncated
         ? `Truncated: ${result.keywordCount} keywords found, first 700 priced.`

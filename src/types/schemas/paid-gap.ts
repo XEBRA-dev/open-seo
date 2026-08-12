@@ -14,8 +14,11 @@ export const PAID_GAP_MAX_COMPETITORS = 4;
 export const paidGapInputSchema = z.object({
   projectId: z.string().min(1),
   clientDomain: z.string().min(1).max(255),
+  // At least one competitor: this is a gap analysis, and a single domain with
+  // no ads just renders an empty table that reads like a failure.
   competitorDomains: z
     .array(z.string().min(1).max(255))
+    .min(1)
     .max(PAID_GAP_MAX_COMPETITORS),
   locationCode: z.number().int().positive(),
   languageCode: z.string().min(2).max(10),
