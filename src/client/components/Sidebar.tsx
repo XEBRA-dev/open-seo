@@ -20,7 +20,11 @@ import { SamSidebarPanel } from "@/client/features/sam/SamSidebarPanel";
 import { ThemePreferenceMenuItems } from "@/client/components/ThemePreferenceMenuItems";
 import { closeDropdown } from "@/client/lib/dropdown";
 import { signOutAndRedirect, useSession } from "@/lib/auth-client";
-import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import {
+  getAccessLogoutHref,
+  isCloudflareAccessClientAuthMode,
+  isHostedClientAuthMode,
+} from "@/lib/auth-mode";
 import { BILLING_ROUTE } from "@/shared/billing";
 
 interface SidebarProps {
@@ -227,6 +231,10 @@ function SidebarViewTab({
 function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
   const { data: session } = useSession();
   const isHostedMode = isHostedClientAuthMode();
+  // Cloudflare Access owns the session in self-host mode, so Better Auth's
+  // signOut is meaningless there — sign out through Access instead. Both modes
+  // get the item; local_noauth has no session to end and keeps none.
+  const isAccessMode = isCloudflareAccessClientAuthMode();
   const email = session?.user?.email;
 
   const closeMenu = () => {
@@ -275,7 +283,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
               </li>
             ) : null}
             <ThemePreferenceMenuItems />
-            {isHostedMode ? (
+            {isHostedMode || isAccessMode ? (
               <>
                 <li
                   aria-hidden
@@ -285,7 +293,15 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
                   <button
                     type="button"
                     className="text-error"
-                    onClick={() => signOutAndRedirect()}
+                    onClick={() => {
+                      if (isHostedMode) {
+                        signOutAndRedirect();
+                        return;
+                      }
+                      window.location.assign(
+                        getAccessLogoutHref(window.location.origin),
+                      );
+                    }}
                   >
                     <LogOut className="h-4 w-4" />
                     Sign out
