@@ -42,5 +42,8 @@
     // Tailwindcss used via @tailwindcss/vite plugin
     "tailwindcss",
     "daisyui",
+    // XEBRA brand font, pulled in by an @import in app.css rather than a JS
+    // import, which knip can't trace.
+    "@fontsource/archivo-black",
   ],
 }

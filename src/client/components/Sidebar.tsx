@@ -121,12 +121,12 @@ export function Sidebar({ projectId, onNavigate, onClose }: SidebarProps) {
   return (
     <div className="flex h-full w-60 flex-col bg-base-200">
       <div className="flex items-center justify-between px-4 pb-2 pt-3">
-        <Link to="/" onClick={onNavigate} aria-label="XEBRA">
-          <img
-            src="/xebra-transparent.png"
-            alt="XEBRA"
-            className="h-6 object-contain"
-          />
+        <Link
+          to="/"
+          onClick={onNavigate}
+          className="font-brand text-base-content text-base tracking-tight"
+        >
+          SEO.XEBRA
         </Link>
         {onClose ? (
           <button

@@ -40,7 +40,7 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       {
-        title: "XEBRA SEO",
+        title: "SEO.XEBRA",
       },
       {
         charSet: "utf-8",

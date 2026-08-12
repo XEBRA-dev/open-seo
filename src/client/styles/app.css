@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@fontsource/archivo-black";
 
 @theme {
   --container-8xl: 88rem;
@@ -369,4 +370,10 @@ html[data-theme="openseo-dark"] .alert-success {
 
 html[data-theme="openseo-dark"] .alert-error {
   @apply border-error/60 bg-error/20;
+}
+
+/* XEBRA brand wordmark. Matches --font-display in the xebra.dev site. */
+.font-brand {
+  font-family: "Archivo Black", sans-serif;
+  font-weight: 900;
 }
