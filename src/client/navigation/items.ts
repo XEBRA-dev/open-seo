@@ -2,6 +2,7 @@ import {
   Bookmark,
   Bot,
   ClipboardCheck,
+  Layers,
   Coins,
   Globe,
   LayoutDashboard,
@@ -64,6 +65,11 @@ const projectNavItems = [
     icon: Link2,
   },
   {
+    to: "/p/$projectId/tech-stack" as const,
+    label: "Tech stack",
+    icon: Layers,
+  },
+  {
     to: "/p/$projectId/audit" as const,
     label: "Site Audit",
     icon: ClipboardCheck,
@@ -122,6 +128,7 @@ export function getProjectNavGroups(projectId: string) {
         byPath("/p/$projectId/backlinks"),
         byPath("/p/$projectId/paid-gap"),
         byPath("/p/$projectId/backlink-gap"),
+        byPath("/p/$projectId/tech-stack"),
         byPath("/p/$projectId/brand-lookup"),
         byPath("/p/$projectId/prompt-explorer"),
       ],

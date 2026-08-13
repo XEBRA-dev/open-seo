@@ -11,6 +11,8 @@ export {
   fetchQuestionsAnswers,
 } from "@/server/lib/dataforseo/business";
 
+export { fetchDomainTechnologies } from "@/server/lib/dataforseo/domain-analytics";
+
 export {
   fetchBacklinksHistory,
   fetchBacklinksRows,
