@@ -49,6 +49,7 @@ import { Route as ProjectPProjectIdKeywordsRouteImport } from './routes/_project
 import { Route as ProjectPProjectIdDomainRouteImport } from './routes/_project/p/$projectId/domain'
 import { Route as ProjectPProjectIdBrandLookupRouteImport } from './routes/_project/p/$projectId/brand-lookup'
 import { Route as ProjectPProjectIdBacklinksRouteImport } from './routes/_project/p/$projectId/backlinks'
+import { Route as ProjectPProjectIdBacklinkGapRouteImport } from './routes/_project/p/$projectId/backlink-gap'
 import { Route as ProjectPProjectIdAuditRouteImport } from './routes/_project/p/$projectId/audit'
 import { Route as ProjectPProjectIdRankTrackingIndexRouteImport } from './routes/_project/p/$projectId/rank-tracking/index'
 import { Route as ProjectPProjectIdAuditIndexRouteImport } from './routes/_project/p/$projectId/audit/index'
@@ -263,6 +264,12 @@ const ProjectPProjectIdBacklinksRoute =
     path: '/backlinks',
     getParentRoute: () => ProjectPProjectIdRouteRoute,
   } as any)
+const ProjectPProjectIdBacklinkGapRoute =
+  ProjectPProjectIdBacklinkGapRouteImport.update({
+    id: '/backlink-gap',
+    path: '/backlink-gap',
+    getParentRoute: () => ProjectPProjectIdRouteRoute,
+  } as any)
 const ProjectPProjectIdAuditRoute = ProjectPProjectIdAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -317,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/onboarding/': typeof AuthenticatedOnboardingIndexRoute
   '/p/$projectId/audit': typeof ProjectPProjectIdAuditRouteWithChildren
+  '/p/$projectId/backlink-gap': typeof ProjectPProjectIdBacklinkGapRoute
   '/p/$projectId/backlinks': typeof ProjectPProjectIdBacklinksRoute
   '/p/$projectId/brand-lookup': typeof ProjectPProjectIdBrandLookupRoute
   '/p/$projectId/domain': typeof ProjectPProjectIdDomainRoute
@@ -358,6 +366,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/onboarding': typeof AuthenticatedOnboardingIndexRoute
+  '/p/$projectId/backlink-gap': typeof ProjectPProjectIdBacklinkGapRoute
   '/p/$projectId/backlinks': typeof ProjectPProjectIdBacklinksRoute
   '/p/$projectId/brand-lookup': typeof ProjectPProjectIdBrandLookupRoute
   '/p/$projectId/domain': typeof ProjectPProjectIdDomainRoute
@@ -405,6 +414,7 @@ export interface FileRoutesById {
   '/api/autumn/$': typeof ApiAutumnSplatRoute
   '/_authenticated/onboarding/': typeof AuthenticatedOnboardingIndexRoute
   '/_project/p/$projectId/audit': typeof ProjectPProjectIdAuditRouteWithChildren
+  '/_project/p/$projectId/backlink-gap': typeof ProjectPProjectIdBacklinkGapRoute
   '/_project/p/$projectId/backlinks': typeof ProjectPProjectIdBacklinksRoute
   '/_project/p/$projectId/brand-lookup': typeof ProjectPProjectIdBrandLookupRoute
   '/_project/p/$projectId/domain': typeof ProjectPProjectIdDomainRoute
@@ -450,6 +460,7 @@ export interface FileRouteTypes {
     | '/api/autumn/$'
     | '/onboarding/'
     | '/p/$projectId/audit'
+    | '/p/$projectId/backlink-gap'
     | '/p/$projectId/backlinks'
     | '/p/$projectId/brand-lookup'
     | '/p/$projectId/domain'
@@ -491,6 +502,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/autumn/$'
     | '/onboarding'
+    | '/p/$projectId/backlink-gap'
     | '/p/$projectId/backlinks'
     | '/p/$projectId/brand-lookup'
     | '/p/$projectId/domain'
@@ -537,6 +549,7 @@ export interface FileRouteTypes {
     | '/api/autumn/$'
     | '/_authenticated/onboarding/'
     | '/_project/p/$projectId/audit'
+    | '/_project/p/$projectId/backlink-gap'
     | '/_project/p/$projectId/backlinks'
     | '/_project/p/$projectId/brand-lookup'
     | '/_project/p/$projectId/domain'
@@ -855,6 +868,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectPProjectIdBacklinksRouteImport
       parentRoute: typeof ProjectPProjectIdRouteRoute
     }
+    '/_project/p/$projectId/backlink-gap': {
+      id: '/_project/p/$projectId/backlink-gap'
+      path: '/backlink-gap'
+      fullPath: '/p/$projectId/backlink-gap'
+      preLoaderRoute: typeof ProjectPProjectIdBacklinkGapRouteImport
+      parentRoute: typeof ProjectPProjectIdRouteRoute
+    }
     '/_project/p/$projectId/audit': {
       id: '/_project/p/$projectId/audit'
       path: '/audit'
@@ -956,6 +976,7 @@ const ProjectPProjectIdRankTrackingRouteWithChildren =
 
 interface ProjectPProjectIdRouteRouteChildren {
   ProjectPProjectIdAuditRoute: typeof ProjectPProjectIdAuditRouteWithChildren
+  ProjectPProjectIdBacklinkGapRoute: typeof ProjectPProjectIdBacklinkGapRoute
   ProjectPProjectIdBacklinksRoute: typeof ProjectPProjectIdBacklinksRoute
   ProjectPProjectIdBrandLookupRoute: typeof ProjectPProjectIdBrandLookupRoute
   ProjectPProjectIdDomainRoute: typeof ProjectPProjectIdDomainRoute
@@ -973,6 +994,7 @@ interface ProjectPProjectIdRouteRouteChildren {
 const ProjectPProjectIdRouteRouteChildren: ProjectPProjectIdRouteRouteChildren =
   {
     ProjectPProjectIdAuditRoute: ProjectPProjectIdAuditRouteWithChildren,
+    ProjectPProjectIdBacklinkGapRoute: ProjectPProjectIdBacklinkGapRoute,
     ProjectPProjectIdBacklinksRoute: ProjectPProjectIdBacklinksRoute,
     ProjectPProjectIdBrandLookupRoute: ProjectPProjectIdBrandLookupRoute,
     ProjectPProjectIdDomainRoute: ProjectPProjectIdDomainRoute,
