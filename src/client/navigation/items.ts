@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Search,
   Sparkles,
+  Star,
   TrendingUp,
 } from "lucide-react";
 import { linkOptions } from "@tanstack/react-router";
@@ -68,6 +69,11 @@ const projectNavItems = [
     to: "/p/$projectId/tech-stack" as const,
     label: "Tech stack",
     icon: Layers,
+  },
+  {
+    to: "/p/$projectId/business-profiles" as const,
+    label: "Business profiles",
+    icon: Star,
   },
   {
     to: "/p/$projectId/audit" as const,
@@ -129,6 +135,7 @@ export function getProjectNavGroups(projectId: string) {
         byPath("/p/$projectId/paid-gap"),
         byPath("/p/$projectId/backlink-gap"),
         byPath("/p/$projectId/tech-stack"),
+        byPath("/p/$projectId/business-profiles"),
         byPath("/p/$projectId/brand-lookup"),
         byPath("/p/$projectId/prompt-explorer"),
       ],

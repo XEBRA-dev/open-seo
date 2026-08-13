@@ -73,6 +73,11 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
         (s) => s.fetchQuestionsAnswers,
         "local_seo",
       ),
+      myBusinessInfo: meter(
+        customer,
+        (s) => s.fetchMyBusinessInfo,
+        "local_seo",
+      ),
     },
     backlinks: {
       summary: meter(customer, (s) => s.fetchBacklinksSummary),
