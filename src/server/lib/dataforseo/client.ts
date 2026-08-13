@@ -91,6 +91,11 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
     },
     domain: {
       rankOverview: meter(customer, (s) => s.fetchDomainRankOverview),
+      technologies: meter(
+        customer,
+        (s) => s.fetchDomainTechnologies,
+        "domain_overview",
+      ),
       rankedKeywords: meter(customer, (s) => s.fetchRankedKeywords),
       relevantPages: meter(customer, (s) => s.fetchRelevantPages),
     },

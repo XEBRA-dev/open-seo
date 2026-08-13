@@ -4,6 +4,7 @@ import {
   BacklinksApi,
   BusinessDataApi,
   DataforseoLabsApi,
+  DomainAnalyticsApi,
   KeywordsDataApi,
   OnPageApi,
   SerpApi,
@@ -129,6 +130,8 @@ function http(
 // Per-section API factories. Each is created per-request so the auth secret is
 // read lazily (it lives in the Worker env, not in module scope).
 export const labsApi = () => new DataforseoLabsApi(API_BASE, http());
+export const domainAnalyticsApi = () =>
+  new DomainAnalyticsApi(API_BASE, http());
 export const keywordsDataApi = () => new KeywordsDataApi(API_BASE, http());
 export const serpApi = () => new SerpApi(API_BASE, http());
 export const businessDataApi = () => new BusinessDataApi(API_BASE, http());
