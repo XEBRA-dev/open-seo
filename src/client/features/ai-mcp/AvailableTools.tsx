@@ -106,6 +106,24 @@ const toolCategories: ToolCategory[] = [
         title: "Get backlinks profile",
         description: "Fetch paginated link-level backlink rows.",
       },
+      {
+        name: "get_backlink_gap",
+        title: "Get backlink gap",
+        description:
+          "Find domains linking to competitors but not to your client.",
+      },
+      {
+        name: "get_paid_keyword_gap",
+        title: "Get paid keyword gap",
+        description:
+          "Compare which keywords competitors buy ads on, with bid ranges.",
+      },
+      {
+        name: "get_tech_stack",
+        title: "Get technology stack",
+        description:
+          "Detect the CMS, ecommerce, analytics, and frameworks a site runs.",
+      },
     ],
   },
   {
@@ -125,6 +143,58 @@ const toolCategories: ToolCategory[] = [
         name: "get_google_business_questions",
         title: "Get business questions",
         description: "Read Google Business Profile Q&A rows.",
+      },
+      {
+        name: "get_business_profiles",
+        title: "Compare business profiles",
+        description:
+          "Compare rating, review volume, and claim status across businesses.",
+      },
+    ],
+  },
+  {
+    label: "Site Audit",
+    tools: [
+      {
+        name: "run_site_audit",
+        title: "Run a site audit",
+        description: "Crawl a site and collect on-page issues.",
+      },
+      {
+        name: "get_audit_status",
+        title: "Get audit status",
+        description: "Check whether a running audit has finished.",
+      },
+      {
+        name: "get_audit_issues",
+        title: "Get audit issues",
+        description: "Read the issues a completed audit found.",
+      },
+      {
+        name: "get_audit_pages",
+        title: "Get audited pages",
+        description: "Read per-page results from a completed audit.",
+      },
+    ],
+  },
+  {
+    label: "Workspace",
+    tools: [
+      {
+        name: "whoami",
+        title: "Who am I",
+        description:
+          "Confirm the authenticated user, mode, and credit balance. Free.",
+      },
+      {
+        name: "list_projects",
+        title: "List projects",
+        description: "List projects and their default market. Free.",
+      },
+      {
+        name: "create_project",
+        title: "Create a project",
+        description: "Create a project to scope other tools to.",
       },
     ],
   },
