@@ -5,7 +5,6 @@ import { domainAnalyticsApi } from "@/server/lib/dataforseo/core";
 import {
   assertOk,
   buildTaskBilling,
-  parseTaskItems,
   type DataforseoApiResponse,
 } from "@/server/lib/dataforseo/envelope";
 
@@ -37,12 +36,15 @@ export async function fetchDomainTechnologies(input: {
       }),
     ]);
   const task = assertOk(response);
+  // Unlike Labs, this endpoint puts the record directly in `result` with no
+  // nested `items` wrapper — the same shape keywords_data uses. Reading
+  // `result[].items` (what parseTaskItems does) silently yields nothing.
+  const results: unknown[] = Array.isArray(task.result) ? task.result : [];
   return {
-    data: parseTaskItems(
-      "domain-technologies-live",
-      task,
-      domainTechnologiesItemSchema,
-    ),
+    data: results.flatMap((result) => {
+      const parsed = domainTechnologiesItemSchema.safeParse(result ?? {});
+      return parsed.success ? [parsed.data] : [];
+    }),
     billing: buildTaskBilling(task),
   };
 }
