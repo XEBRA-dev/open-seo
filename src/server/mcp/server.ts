@@ -57,6 +57,7 @@ import {
   getAuditStatusTool,
   runSiteAuditTool,
 } from "@/server/mcp/tools/site-audit-tools";
+import { getBacklinkGapTool } from "@/server/mcp/tools/get-backlink-gap";
 import { getPaidKeywordGapTool } from "@/server/mcp/tools/get-paid-keyword-gap";
 import { whoamiTool } from "@/server/mcp/tools/whoami";
 
@@ -166,6 +167,7 @@ export function createOpenSeoMcpServer(authProps: McpProps) {
   register(getGoogleBusinessQuestionsTool);
   register(getKeywordMetricsTool);
   register(getPaidKeywordGapTool);
+  register(getBacklinkGapTool);
   register(getSearchConsolePerformanceTool);
   register(inspectUrlsTool);
   register(getGoogleAnalyticsOrganicLandingPagesTool);

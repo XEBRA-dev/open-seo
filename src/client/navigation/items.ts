@@ -59,6 +59,11 @@ const projectNavItems = [
     icon: Coins,
   },
   {
+    to: "/p/$projectId/backlink-gap" as const,
+    label: "Backlink gap",
+    icon: Link2,
+  },
+  {
     to: "/p/$projectId/audit" as const,
     label: "Site Audit",
     icon: ClipboardCheck,
@@ -116,6 +121,7 @@ export function getProjectNavGroups(projectId: string) {
         byPath("/p/$projectId/domain"),
         byPath("/p/$projectId/backlinks"),
         byPath("/p/$projectId/paid-gap"),
+        byPath("/p/$projectId/backlink-gap"),
         byPath("/p/$projectId/brand-lookup"),
         byPath("/p/$projectId/prompt-explorer"),
       ],
