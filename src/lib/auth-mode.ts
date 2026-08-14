@@ -49,6 +49,28 @@ export function isCloudflareAccessClientAuthMode() {
 }
 
 /**
+ * Whether to render the sidebar account menu, which holds Settings, the theme
+ * picker and Sign out.
+ *
+ * This deliberately does not gate on a Better Auth session alone. Cloudflare
+ * Access mode authenticates per-request from the Access JWT and never
+ * establishes a Better Auth session, so `useSession()` is permanently empty
+ * there — gating on it hid the whole menu, and with it the only way to sign
+ * out of a self-hosted deployment.
+ *
+ * local_noauth has no session to end, so it keeps the menu hidden.
+ */
+export function shouldShowAccountMenu(
+  hasSessionEmail: boolean,
+  authMode: string | null | undefined,
+): boolean {
+  const mode = getAuthMode(authMode);
+  if (mode === "local_noauth") return false;
+  if (mode === "cloudflare_access") return true;
+  return hasSessionEmail;
+}
+
+/**
  * Cloudflare Access owns the session in this mode, so signing out means
  * clearing its cookie, not Better Auth's. `returnTo` sends the browser back to
  * the app afterwards, which re-triggers the Access login; without it Access
