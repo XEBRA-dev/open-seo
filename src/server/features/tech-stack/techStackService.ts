@@ -1,5 +1,6 @@
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import { createDataforseoClient } from "@/server/lib/dataforseo/client";
+import { describeDomainLookupFailure } from "@/server/lib/domain-lookup-failure";
 import { TECH_STACK_MAX_DOMAINS } from "@/types/schemas/tech-stack";
 
 import { flattenTechnologies, type TechStackRow } from "./flattenTechnologies";
@@ -35,6 +36,9 @@ export async function runTechStackLookup(params: {
   settled.forEach((outcome, index) => {
     const target = targets[index];
     if (outcome.status === "rejected") {
+      console.error(
+        describeDomainLookupFailure("tech-stack", target, outcome.reason),
+      );
       failedDomains.push(target);
       return;
     }

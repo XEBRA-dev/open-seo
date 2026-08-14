@@ -1,6 +1,7 @@
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import type { ReferringDomainItem } from "@/server/lib/dataforseo/backlinks";
 import { createDataforseoClient } from "@/server/lib/dataforseo/client";
+import { describeDomainLookupFailure } from "@/server/lib/domain-lookup-failure";
 
 import {
   buildBacklinkGapRows,
@@ -56,6 +57,9 @@ export async function runBacklinkGapAnalysis(params: {
   settled.forEach((outcome, index) => {
     const target = targets[index];
     if (outcome.status === "rejected") {
+      console.error(
+        describeDomainLookupFailure("backlink-gap", target, outcome.reason),
+      );
       failedDomains.push(target);
       return;
     }

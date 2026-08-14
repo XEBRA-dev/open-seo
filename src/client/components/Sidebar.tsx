@@ -22,6 +22,7 @@ import { closeDropdown } from "@/client/lib/dropdown";
 import { signOutAndRedirect, useSession } from "@/lib/auth-client";
 import {
   getAccessLogoutHref,
+  shouldShowAccountMenu,
   isCloudflareAccessClientAuthMode,
   isHostedClientAuthMode,
 } from "@/lib/auth-mode";
@@ -236,6 +237,11 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
   // get the item; local_noauth has no session to end and keeps none.
   const isAccessMode = isCloudflareAccessClientAuthMode();
   const email = session?.user?.email;
+  // Access mode has no Better Auth session, so the menu cannot depend on one.
+  const showAccountMenu = shouldShowAccountMenu(
+    Boolean(email),
+    import.meta.env.AUTH_MODE,
+  );
 
   const closeMenu = () => {
     closeDropdown();
@@ -251,7 +257,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
         linkProps={{ to: "/support" }}
       />
 
-      {email ? (
+      {showAccountMenu ? (
         <div className="dropdown dropdown-top w-full">
           <button
             type="button"
@@ -261,7 +267,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
           >
             <User className="h-4 w-4 shrink-0" />
             <span className="truncate" data-ph-mask>
-              {email}
+              {email ?? "Account"}
             </span>
           </button>
           <ul

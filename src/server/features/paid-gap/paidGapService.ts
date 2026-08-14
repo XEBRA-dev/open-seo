@@ -1,6 +1,7 @@
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import { createDataforseoClient } from "@/server/lib/dataforseo/client";
 import { fetchKeywordMetricsForList } from "@/server/lib/dataforseo/keyword-metrics";
+import { describeDomainLookupFailure } from "@/server/lib/domain-lookup-failure";
 
 import { buildPaidGapRows, type PaidGapRow } from "./buildPaidGapRows";
 
@@ -62,6 +63,9 @@ export async function runPaidGapAnalysis(params: {
   settled.forEach((outcome, index) => {
     const domain = domains[index];
     if (outcome.status === "rejected") {
+      console.error(
+        describeDomainLookupFailure("paid-gap", domain, outcome.reason),
+      );
       failedDomains.push(domain);
       return;
     }
