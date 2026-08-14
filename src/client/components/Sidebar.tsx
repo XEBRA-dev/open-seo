@@ -19,14 +19,10 @@ import { ProjectSwitcher } from "@/client/features/projects/ProjectSwitcher";
 import { SamSidebarPanel } from "@/client/features/sam/SamSidebarPanel";
 import { ThemePreferenceMenuItems } from "@/client/components/ThemePreferenceMenuItems";
 import { closeDropdown } from "@/client/lib/dropdown";
-import { signOutAndRedirect, useSession } from "@/lib/auth-client";
-import {
-  getAccessLogoutHref,
-  shouldShowAccountMenu,
-  isCloudflareAccessClientAuthMode,
-  isHostedClientAuthMode,
-} from "@/lib/auth-mode";
+import { useSession } from "@/lib/auth-client";
+import { shouldShowAccountMenu, isHostedClientAuthMode } from "@/lib/auth-mode";
 import { BILLING_ROUTE } from "@/shared/billing";
+import { performSignOut } from "@/client/features/auth/performSignOut";
 
 interface SidebarProps {
   projectId: string | null;
@@ -232,10 +228,6 @@ function SidebarViewTab({
 function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
   const { data: session } = useSession();
   const isHostedMode = isHostedClientAuthMode();
-  // Cloudflare Access owns the session in self-host mode, so Better Auth's
-  // signOut is meaningless there — sign out through Access instead. Both modes
-  // get the item; local_noauth has no session to end and keeps none.
-  const isAccessMode = isCloudflareAccessClientAuthMode();
   const email = session?.user?.email;
   // Access mode has no Better Auth session, so the menu cannot depend on one.
   const showAccountMenu = shouldShowAccountMenu(
@@ -289,32 +281,20 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
               </li>
             ) : null}
             <ThemePreferenceMenuItems />
-            {isHostedMode || isAccessMode ? (
-              <>
-                <li
-                  aria-hidden
-                  className="pointer-events-none my-1 h-px bg-base-300 p-0"
-                />
-                <li>
-                  <button
-                    type="button"
-                    className="text-error"
-                    onClick={() => {
-                      if (isHostedMode) {
-                        signOutAndRedirect();
-                        return;
-                      }
-                      window.location.assign(
-                        getAccessLogoutHref(window.location.origin),
-                      );
-                    }}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign out
-                  </button>
-                </li>
-              </>
-            ) : null}
+            <li
+              aria-hidden
+              className="pointer-events-none my-1 h-px bg-base-300 p-0"
+            />
+            <li>
+              <button
+                type="button"
+                className="text-error"
+                onClick={performSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
+            </li>
           </ul>
         </div>
       ) : (
