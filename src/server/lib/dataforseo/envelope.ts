@@ -187,6 +187,25 @@ export function assertOk<T extends DataforseoTaskLike>(
   return task;
 }
 
+/**
+ * Converts an SDK value into plain JSON before Zod validation.
+ *
+ * The generated `dataforseo-client` does not hand back object literals — it
+ * deserializes responses into classes (`TechnologiesInfo`, `ResultInfo`, ...).
+ * Zod v4's `z.record()` rejects any non-plain object, so validating an SDK
+ * value directly fails with "expected record, received TechnologiesInfo" and
+ * silently drops the row. Round-tripping through JSON hands Zod the structure
+ * the API actually sent.
+ *
+ * Fixtures written as object literals do NOT reproduce this: they are already
+ * plain, so a test built from a captured curl response passes while the real
+ * SDK path returns nothing.
+ */
+export function toPlainJson(value: unknown): unknown {
+  if (value === undefined) return undefined;
+  return JSON.parse(JSON.stringify(value));
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

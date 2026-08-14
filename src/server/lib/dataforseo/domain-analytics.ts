@@ -5,6 +5,7 @@ import { domainAnalyticsApi } from "@/server/lib/dataforseo/core";
 import {
   assertOk,
   buildTaskBilling,
+  toPlainJson,
   type DataforseoApiResponse,
 } from "@/server/lib/dataforseo/envelope";
 
@@ -42,7 +43,10 @@ export async function fetchDomainTechnologies(input: {
   const results: unknown[] = Array.isArray(task.result) ? task.result : [];
   return {
     data: results.flatMap((result) => {
-      const parsed = domainTechnologiesItemSchema.safeParse(result ?? {});
+      // toPlainJson: the SDK returns class instances, which z.record() rejects.
+      const parsed = domainTechnologiesItemSchema.safeParse(
+        toPlainJson(result) ?? {},
+      );
       return parsed.success ? [parsed.data] : [];
     }),
     billing: buildTaskBilling(task),

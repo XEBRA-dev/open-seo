@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ApiKeySettings } from "@/client/features/settings/ApiKeySettings";
 import { type ThemePreference, useThemePreference } from "@/client/lib/theme";
 import { authClient, useSession } from "@/lib/auth-client";
-import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import { isHostedClientAuthMode, shouldShowAccountMenu } from "@/lib/auth-mode";
+import { performSignOut } from "@/client/features/auth/performSignOut";
 import { version } from "../../../package.json";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -29,6 +30,13 @@ function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const analyticsEnabled = session?.user?.analyticsOptedOut !== true;
+  const email = session?.user?.email;
+  // Same authority as the sidebar menu: Access always has a session to end,
+  // hosted needs one, local_noauth has none.
+  const canSignOut = shouldShowAccountMenu(
+    Boolean(email),
+    import.meta.env.AUTH_MODE,
+  );
 
   async function updateAnalyticsPreference(enabled: boolean) {
     setIsSaving(true);
@@ -129,6 +137,39 @@ function SettingsPage() {
             </div>
           </section>
         )}
+
+        {canSignOut ? (
+          <section className="space-y-3">
+            <h2 className="text-sm font-medium text-base-content/50">
+              Account
+            </h2>
+            <div className="flex items-center justify-between gap-6">
+              <div className="min-w-0">
+                <span className="text-sm">Signed in</span>
+                {email ? (
+                  <p
+                    className="truncate text-sm text-base-content/60"
+                    data-ph-mask
+                  >
+                    {email}
+                  </p>
+                ) : (
+                  <p className="text-sm text-base-content/60">
+                    Cloudflare Access manages this session.
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn btn-outline btn-error btn-sm shrink-0"
+                onClick={performSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                Sign out
+              </button>
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
