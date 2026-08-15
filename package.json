@@ -116,6 +116,7 @@
     "remeda": "^2.33.6",
     "robots-parser": "^3.0.1",
     "sonner": "^2.0.7",
+    "stripe": "^22.4.0",
     "tailwindcss": "^4.1.16",
     "tldts": "^7.0.25",
     "zod": "^4.1.12"

@@ -3,6 +3,8 @@ import { useCustomer } from "autumn-js/react";
 import { useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import { isXebraBillingProvider } from "@/lib/billing-mode";
+import { CreditsBillingPage } from "@/client/features/billing/credits/CreditsBillingPage";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { buildCheckoutSuccessUrl } from "@/client/features/billing/checkout-url";
@@ -24,7 +26,12 @@ import {
 
 export const Route = createFileRoute("/_app/billing")({
   beforeLoad: () => {
-    if (!isHostedClientAuthMode()) {
+    // XEBRA credit billing replaces Autumn, and runs under Access auth too, so
+    // hosted mode is no longer the only way to reach this route.
+    if (
+      !isHostedClientAuthMode() &&
+      !isXebraBillingProvider(import.meta.env.BILLING_PROVIDER)
+    ) {
       throw notFound();
     }
   },
@@ -32,6 +39,16 @@ export const Route = createFileRoute("/_app/billing")({
 });
 
 function BillingPage() {
+  // XEBRA's ledger fully replaces Autumn; nothing below this line runs when it
+  // is enabled.
+  if (isXebraBillingProvider(import.meta.env.BILLING_PROVIDER)) {
+    return <CreditsBillingPage />;
+  }
+
+  return <AutumnBillingPage />;
+}
+
+function AutumnBillingPage() {
   const { data: session, isPending: isSessionPending } = useSession();
   const [topUpAmount, setTopUpAmount] = useState("20");
   const [isPending, setIsPending] = useState(false);

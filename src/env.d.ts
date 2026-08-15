@@ -46,6 +46,18 @@ declare namespace Cloudflare {
     // DataForSEO API Basic auth value (base64 of login:password)
     DATAFORSEO_API_KEY: string;
 
+    // XEBRA credit billing. "xebra" enables the D1-backed credit ledger and
+    // replaces Autumn metering; unset means no metering at all.
+    BILLING_PROVIDER?: "xebra" | "none";
+    // Stripe, for prepaid credit-pack purchases. Both are required before the
+    // /billing purchase flow or the webhook will work; everything else about
+    // the credit system (manual grants, metering) runs without them.
+    STRIPE_SECRET_KEY?: string;
+    STRIPE_WEBHOOK_SECRET?: string;
+    // Checkout currency. Credits are USD-denominated to match DataForSEO's
+    // billing, so anything else introduces FX drift against the margin.
+    STRIPE_CURRENCY?: string;
+
     // OpenRouter API key for the in-app chat agents (onboarding + SAM).
     OPENROUTER_API_KEY?: string;
     // Optional OpenRouter model slug override (defaults in openrouter.ts).
@@ -55,6 +67,7 @@ declare namespace Cloudflare {
 
 interface ImportMetaEnv {
   readonly AUTH_MODE?: "cloudflare_access" | "local_noauth" | "hosted";
+  readonly BILLING_PROVIDER?: "xebra" | "none";
   readonly DATABASE_PROVIDER?: "d1" | "postgres";
   readonly BYPASS_EMAIL_VERIFICATION?: string;
   readonly POSTHOG_PUBLIC_KEY?: string;

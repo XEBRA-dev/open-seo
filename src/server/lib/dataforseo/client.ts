@@ -16,7 +16,11 @@ import {
   type DataforseoApiCallCost,
   type DataforseoApiResponse,
 } from "@/server/lib/dataforseo/envelope";
-import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
+import {
+  getOptionalEnvValue,
+  isHostedServerAuthMode,
+} from "@/server/lib/runtime-env";
+import { isXebraBillingProvider } from "@/lib/billing-mode";
 import { AppError } from "@/server/lib/errors";
 
 export { mapDataforseoPathToCreditFeature };
@@ -144,11 +148,70 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
   } as const;
 }
 
+/**
+ * XEBRA's own metering: check the org's credit balance, run the call, then
+ * always record the spend.
+ *
+ * Mirrors the Autumn path's structure deliberately, including the awkward part:
+ * a DataForSEO call that errors after being billed is still recorded. On a 25%
+ * margin an unmetered charged call is pure loss.
+ */
+async function meterWithXebraCredits<T>(
+  customer: BillingCustomerContext,
+  execute: () => Promise<DataforseoApiResponse<T>>,
+): Promise<T> {
+  // Lazy, like the Autumn SDK above: a static import would pull the whole
+  // Drizzle/D1 layer into this module's eager graph, which deployments with no
+  // XEBRA billing never touch.
+  const { assertCreditsAvailable, getOrgBillingPolicy, recordSpend } =
+    await import("@/server/billing/credits/creditLedger");
+
+  const { organizationId } = customer;
+  const policy = await getOrgBillingPolicy(organizationId);
+
+  if (policy.mode === "metered") {
+    await assertCreditsAvailable(organizationId);
+  }
+
+  const record = async (billing: DataforseoApiCallCost) => {
+    await recordSpend({
+      organizationId,
+      rawCostUsd: billing.costUsd,
+      markupBps: policy.markupBps,
+    });
+  };
+
+  let result: DataforseoApiResponse<T>;
+  try {
+    result = await execute();
+  } catch (error) {
+    if (error instanceof DataforseoChargedTaskError) {
+      // Same rule as the Autumn path: a malformed request DataForSEO did not
+      // bill returns no value, so do not charge for it. If they billed us
+      // anyway, record it so the spend stays visible instead of silently eaten.
+      if (!(error.isInvalidField && error.billing.costUsd <= 0)) {
+        await record(error.billing);
+      }
+    }
+    throw error;
+  }
+
+  await record(result.billing);
+
+  return result.data;
+}
+
 async function meterDataforseoCall<T>(
   customer: BillingCustomerContext,
   execute: () => Promise<DataforseoApiResponse<T>>,
   creditFeature?: CreditFeature,
 ): Promise<T> {
+  // Checked before the hosted-mode branch so XEBRA's ledger fully replaces
+  // Autumn rather than layering on top of it.
+  if (isXebraBillingProvider(await getOptionalEnvValue("BILLING_PROVIDER"))) {
+    return meterWithXebraCredits(customer, execute);
+  }
+
   const isHostedMode = await isHostedServerAuthMode();
 
   if (!isHostedMode) {
