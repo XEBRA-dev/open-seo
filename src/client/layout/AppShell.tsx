@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Menu } from "lucide-react";
 import {
@@ -13,6 +13,7 @@ import { BILLING_ROUTE } from "@/shared/billing";
 import { getSeoApiKeyStatus } from "@/serverFunctions/config";
 import { getProjects } from "@/serverFunctions/projects";
 import { getLastProjectId } from "@/client/lib/active-project";
+import { BrandWordmark } from "@/client/components/BrandWordmark";
 
 const DATAFORSEO_HELP_PATH = "/help/dataforseo-api-key";
 
@@ -180,9 +181,7 @@ function MobileTopBar({
       >
         <Menu className="h-5 w-5" />
       </button>
-      <Link to="/" className="ml-1 font-semibold text-base-content">
-        OpenSEO
-      </Link>
+      <BrandWordmark className="ml-1 text-base" />
     </div>
   );
 }

@@ -60,8 +60,8 @@ export function PostSignupOnboarding({
 
       <div className="text-center space-y-3">
         <img
-          src="/transparent-logo.png"
-          alt="OpenSEO"
+          src="/xebra-transparent.png"
+          alt="SEO.XEBRA"
           className="mx-auto size-10 rounded-lg"
         />
         <p className="text-xs font-medium uppercase tracking-wide text-base-content/50">
