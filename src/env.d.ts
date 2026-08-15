@@ -57,6 +57,9 @@ declare namespace Cloudflare {
     // Checkout currency. Credits are USD-denominated to match DataForSEO's
     // billing, so anything else introduces FX drift against the margin.
     STRIPE_CURRENCY?: string;
+    // Stripe Tax product tax code. Defaults to SaaS (business use). Which code
+    // is correct for prepaid SEO-data credits is an accounting decision.
+    STRIPE_TAX_CODE?: string;
 
     // OpenRouter API key for the in-app chat agents (onboarding + SAM).
     OPENROUTER_API_KEY?: string;

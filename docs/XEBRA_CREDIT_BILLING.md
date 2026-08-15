@@ -110,11 +110,50 @@ Stripe retries on any non-2xx, so the handler is deliberate about them:
 - **The organization comes from the session**, which was created server-side from
   the authenticated context — never from the request body.
 
-### Swedish VAT
+### VAT
 
-`automatic_tax` is enabled on every session. Turn on Stripe Tax in the
-dashboard and register the Swedish VAT number for MOMS and EU B2B reverse
-charge to be applied. It is harmless while Stripe Tax is off.
+Verified against the account (`acct_1U0zBIAxvTyARivk`, test mode) rather than
+assumed:
+
+| check                         | finding                                             |
+| ----------------------------- | --------------------------------------------------- |
+| Stripe Tax status             | `active`, head office `SE`                          |
+| account default tax behaviour | `exclusive` — VAT is added on top of the pack price |
+| account default tax code      | `null`                                              |
+| **tax registrations**         | **none**                                            |
+
+Every session sets `automatic_tax: { enabled: true }` and
+`tax_id_collection: { enabled: true }`, so an EU business can enter a VAT
+number and get reverse charge instead of Swedish MOMS.
+
+Because the account default tax code is `null`, each line item sets one
+explicitly (`STRIPE_TAX_CODE`, default `txcd_10103001` — SaaS, business use).
+`txcd_10701400` (Website Information Services, business use) arguably describes
+an SEO data tool more precisely. Which is correct is an accounting decision,
+not a code one.
+
+> **You are not collecting VAT yet.** Stripe Tax only calculates tax in
+> jurisdictions where you hold an active registration, and this account has
+> none. `automatic_tax` will not error — it will quietly charge **zero VAT** on
+> every sale. Add the Swedish registration under Stripe Tax → Registrations
+> (test and live are separate) before taking real money, or you will owe VAT you
+> never collected.
+
+Prices are VAT-exclusive, so a pack labelled `$50` costs a Swedish consumer
+$62.50 once MOMS applies. The billing page says so explicitly; keep that copy if
+you change the pack labels.
+
+### Sharing the Stripe account
+
+This account also serves a Lovable project, whose webhook endpoints already
+subscribe to `checkout.session.completed`. Consequences:
+
+- Lovable's endpoints receive our checkout events, and ours receive theirs.
+- Our handler is safe: an event without our metadata is refused by
+  `parseCheckoutFulfillment` and acknowledged with 200, never credited.
+- Whether Lovable's handler is equally careful with our events is not something
+  this repo can guarantee. A dedicated Stripe account for SEO.XEBRA removes the
+  question entirely.
 
 ## The FX caveat
 

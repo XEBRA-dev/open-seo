@@ -118,6 +118,11 @@ export function CreditsBillingPage() {
               <h2 className="text-sm font-medium text-base-content/50">
                 Buy credits
               </h2>
+              <p className="text-xs text-base-content/50">
+                Prices exclude VAT. Stripe adds any applicable VAT at checkout
+                based on your billing country, and EU businesses can enter a VAT
+                number for reverse charge.
+              </p>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 {CREDIT_PACKS.map((pack) => (
                   <button
