@@ -73,8 +73,8 @@ function OAuthConsentPage() {
     <div className="w-full max-w-md rounded-2xl border border-base-300 bg-base-100 p-8 shadow-sm">
       <div className="flex flex-col items-center text-center">
         <img
-          src="/transparent-logo.png"
-          alt="OpenSEO"
+          src="/xebra-transparent.png"
+          alt="SEO.XEBRA"
           className="size-10 rounded-lg"
         />
         <h1 className="mt-5 text-xl font-semibold">Authorize MCP access</h1>

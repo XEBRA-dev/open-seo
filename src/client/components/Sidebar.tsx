@@ -23,6 +23,7 @@ import { useSession } from "@/lib/auth-client";
 import { shouldShowAccountMenu, isHostedClientAuthMode } from "@/lib/auth-mode";
 import { BILLING_ROUTE } from "@/shared/billing";
 import { performSignOut } from "@/client/features/auth/performSignOut";
+import { BrandWordmark } from "@/client/components/BrandWordmark";
 
 interface SidebarProps {
   projectId: string | null;
@@ -122,13 +123,7 @@ export function Sidebar({ projectId, onNavigate, onClose }: SidebarProps) {
   return (
     <div className="flex h-full w-60 flex-col bg-base-200">
       <div className="flex items-center justify-between px-4 pb-2 pt-3">
-        <Link
-          to="/"
-          onClick={onNavigate}
-          className="font-brand text-base-content text-base tracking-tight"
-        >
-          SEO.XEBRA
-        </Link>
+        <BrandWordmark onNavigate={onNavigate} />
         {onClose ? (
           <button
             type="button"
