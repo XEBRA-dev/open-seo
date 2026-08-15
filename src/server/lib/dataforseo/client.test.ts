@@ -47,6 +47,9 @@ vi.mock("@/server/billing/subscription", async (importOriginal) => {
 
 vi.mock("@/server/lib/runtime-env", () => ({
   isHostedServerAuthMode: isHostedServerAuthModeMock,
+  // Unset BILLING_PROVIDER keeps these tests on the Autumn path they were
+  // written for; the XEBRA ledger path is covered in client.xebra-credits.test.ts.
+  getOptionalEnvValue: async () => undefined,
 }));
 
 vi.mock("@/server/lib/posthog", () => ({
